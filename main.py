@@ -1,5 +1,5 @@
 import torch
-import math
+from torch import nn
 import yaml
 from src.dataset import get_dataset
 from src.dataloader import get_dataloader
@@ -51,26 +51,24 @@ def test_loop(dataloader, model, loss_fn):
 def main():
     cfg = yaml.load(open('./config/config.yml', 'r'), Loader=yaml.FullLoader)
 
-    dataset = get_dataset(cfg['dataset'])
-    # visualize_dataset(cfg, dataset["test"])
+    dataset = get_dataset(cfg["dataset"])
+
+    visualize_dataset(cfg, dataset["test"])
 
     dataloader = get_dataloader(dataset, cfg)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = MyNetwork().to(device)
 
-    logits = model(X)
-    pred_probab = nn.Softmax(dim=1)(logits)
-    y_pred = pred_probab.argmax(1)
-
     loss_fn = nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.SGD(model.parameters(), lr=cfg["learning_rate"])
 
     epochs = 10
     for t in range(epochs):
         print(f"Epoch {t + 1}\n-------------------------------")
-        train_loop(train_dataloader, model, loss_fn, optimizer)
-        test_loop(test_dataloader, model, loss_fn)
+        train_loop(dataloader["train"], model, loss_fn, optimizer)
+        test_loop(dataloader["eval"], model, loss_fn)
+    test_loop(dataloader["test"], model, loss_fn)
     print("Done!")
 
     #

@@ -1,5 +1,7 @@
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
+import torch
+import math
 
 
 def get_dataset(dataset_to_get):
@@ -15,6 +17,11 @@ def get_dataset(dataset_to_get):
     else:
         raise ValueError('Unknown dataset: {}'.format(dataset_to_get))
 
-    dataset = {'name': dataset_to_get, 'train': train, 'test': test}
+    train, eval = torch.utils.data.random_split(
+        train,
+        [math.floor(len(train) * 0.8), len(train) - math.floor(len(train) * 0.8)]
+    )
+
+    dataset = {'name': dataset_to_get, 'train': train, 'test': test, 'eval': eval}
 
     return dataset
